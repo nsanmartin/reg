@@ -23,6 +23,8 @@ dependencies:
 - base >= 4.7 && < 5
 - Hclip >= 3.0.0.4
 - optparse-applicative
+- directory
+- containers
 
 library:
   source-dirs: src

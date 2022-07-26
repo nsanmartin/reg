@@ -2,33 +2,55 @@ module Main where
 
 import Options.Applicative
 import Data.Semigroup ((<>))
+-- remove this
+import System.IO
+import qualified Data.Map as Map
 
-data Input = StdInput { print :: Bool } | GetRegsInput [String]
+import Store
+
+
+
+
+data Input = StdInput | RegsInput String | PrintInput Bool
 
 stdInput :: Parser Input
-stdInput = StdInput
-         <$> switch
-          ( long "print"
-         <> short 'p'
-         <> help "Print regs (vs print stdin) after registering the input." )
+stdInput = pure StdInput
 
 
 getRegsInput :: Parser Input
-getRegsInput = GetRegsInput <$> some (argument str (metavar "REGISTERS..."))
+getRegsInput = RegsInput
+    <$> argument str (metavar "REGISTERS...")
+
+printInput :: Parser Input
+printInput = PrintInput
+    <$> switch
+     ( long "print"
+    <> short 'p'
+    <> help "Print regs (vs print stdin) after registering the input." )
 
 input :: Parser Input
-input = getRegsInput <|> stdInput
-
-getReg :: Char -> String
-getReg c = ['\'', c, '\'']
-
-getRegBlock :: String -> String
-getRegBlock regs = concat $ map getReg regs 
+input = getRegsInput <|> stdInput <|> printInput
 
 go :: Input -> IO ()
-go (GetRegsInput regs) = putStrLn "regs:\n" >> mapM_ (putStrLn . getRegBlock) regs
-go (StdInput False) = getContents >>= putStrLn
-go (StdInput True) = getContents >> putStrLn "print regs"
+go (RegsInput regs) = do
+    table <- getRegTable
+    mapM_ putStrLn $ filterNothing "" (map (\k -> Map.lookup k table) regs)
+
+-- if p is False, -p was not given and then we;re not here
+go (PrintInput _) = do
+    regScreen <- getRegfileScreen
+    mapM_ putStrLn regScreen
+
+-- not needed
+-- go (PrintInput False) = return ()
+
+-- read stdin and store in regfile
+go StdInput  = do
+    contents <- getContents
+    regfile <- getRegfile
+    putStrLn contents
+    writeFile regfile contents
+
 
 description :: String
 description = 

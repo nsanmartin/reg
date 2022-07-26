@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Lib
+      Store
   other-modules:
       Paths_reg
   hs-source-dirs:
@@ -33,6 +34,8 @@ library
   build-depends:
       Hclip >=3.0.0.4
     , base >=4.7 && <5
+    , containers
+    , directory
     , optparse-applicative
   default-language: Haskell2010
 
@@ -46,6 +49,8 @@ executable reg-exe
   build-depends:
       Hclip >=3.0.0.4
     , base >=4.7 && <5
+    , containers
+    , directory
     , optparse-applicative
     , reg
   default-language: Haskell2010
@@ -61,6 +66,8 @@ test-suite reg-test
   build-depends:
       Hclip >=3.0.0.4
     , base >=4.7 && <5
+    , containers
+    , directory
     , optparse-applicative
     , reg
   default-language: Haskell2010
