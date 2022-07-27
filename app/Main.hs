@@ -6,12 +6,14 @@ import qualified System.IO.Strict as SIO
 -- remove this
 import System.IO
 import qualified Data.Map as Map
-import System.Hclip
-
+import qualified System.Hclip as Hclip
+import Data.Char (isSpace)
 import Store
 
+setClipboard = Hclip.setClipboard . rstrip
 
-
+rstrip :: String -> String
+rstrip = reverse . dropWhile isSpace . reverse
 
 data Input = StdInput | RegsInput String | PrintInput Bool
 
@@ -53,6 +55,7 @@ go StdInput  = do
     oldContents <- SIO.readFile regfile 
     storeRegs regfile $ joinContents oldContents newContents 
     setClipboard newContents
+    --putStrLn newContents
 
 
 description :: String
