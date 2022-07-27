@@ -25,6 +25,7 @@ dependencies:
 - optparse-applicative
 - directory
 - containers
+- strict
 
 library:
   source-dirs: src

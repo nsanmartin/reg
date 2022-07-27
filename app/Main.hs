@@ -2,6 +2,7 @@ module Main where
 
 import Options.Applicative
 import Data.Semigroup ((<>))
+import qualified System.IO.Strict as SIO
 -- remove this
 import System.IO
 import qualified Data.Map as Map
@@ -44,12 +45,11 @@ go (PrintInput _) = do
 -- not needed
 -- go (PrintInput False) = return ()
 
--- read stdin and store in regfile
 go StdInput  = do
-    contents <- getContents
+    newContents <- SIO.getContents
     regfile <- getRegfile
-    putStrLn contents
-    writeFile regfile contents
+    oldContents <- SIO.readFile regfile 
+    storeRegs regfile $ joinContents oldContents newContents 
 
 
 description :: String

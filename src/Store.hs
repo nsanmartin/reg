@@ -4,6 +4,7 @@ where
 import System.Directory
 import System.IO
 import qualified Data.Map as Map
+import qualified System.IO.Strict as SIO
 
 regs :: String
 regs = "0123456789abcdefghijklmnopqrstuvwxyz*+"
@@ -11,12 +12,14 @@ regs = "0123456789abcdefghijklmnopqrstuvwxyz*+"
 getPrefixes :: [String]
 getPrefixes =  map (\c -> '"':c:" ") regs
 
+toRegScreen :: [String] -> [String]
+toRegScreen contents = map (\(p, r) -> p ++ r) $ zip getPrefixes contents
+
 getRegfileScreen :: IO [String]
 getRegfileScreen = do
     regfile <- getRegfile
     contents <- readFile regfile
-    return $
-        map (\(p, r) -> p ++ r) $ zip getPrefixes (lines contents)
+    return $ toRegScreen $ lines contents
 
 getRegfile :: IO FilePath
 getRegfile = fmap (++ "/.reg/regfile") getHomeDirectory
@@ -35,8 +38,17 @@ getRegTable = do
     contents <- readFile regfile
     return  (Map.fromList $ zip regs (lines contents))
 
+joinContents :: String -> String -> [String]
+joinContents oldContent newContent = 
+    (lines newContent) ++ (lines oldContent)
+
+
 filterNothing :: String ->  [Maybe String] -> [String]
 filterNothing str = foldr (\a b-> case a of Nothing -> (str:b) ; Just x -> (x:b)) []
--- storeRegs :: [String]  -> IO ()
--- storeRegs ls = do 
+
+storeRegs :: String -> [String] -> IO ()
+storeRegs regfile joined = do 
+    writeFile regfile $ unlines joined
+    putStrLn $ unlines $ toRegScreen joined
+    
 
