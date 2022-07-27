@@ -6,6 +6,7 @@ import qualified System.IO.Strict as SIO
 -- remove this
 import System.IO
 import qualified Data.Map as Map
+import System.Hclip
 
 import Store
 
@@ -34,8 +35,9 @@ input = getRegsInput <|> stdInput <|> printInput
 
 go :: Input -> IO ()
 go (RegsInput regs) = do
-    table <- getRegTable
-    mapM_ putStrLn $ filterNothing "" (map (\k -> Map.lookup k table) regs)
+    reqregs <- fmap (\table -> unlines $ filterNothing "" (map (\k -> Map.lookup k table) regs)) getRegTable
+    putStrLn reqregs
+    setClipboard reqregs
 
 -- if p is False, -p was not given and then we;re not here
 go (PrintInput _) = do
@@ -50,6 +52,7 @@ go StdInput  = do
     regfile <- getRegfile
     oldContents <- SIO.readFile regfile 
     storeRegs regfile $ joinContents oldContents newContents 
+    setClipboard newContents
 
 
 description :: String
