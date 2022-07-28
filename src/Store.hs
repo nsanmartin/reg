@@ -47,8 +47,11 @@ filterNothing :: String ->  [Maybe String] -> [String]
 filterNothing str = foldr (\a b-> case a of Nothing -> (str:b) ; Just x -> (x:b)) []
 
 storeRegs :: String -> [String] -> IO ()
-storeRegs regfile joined = do 
-    writeFile regfile $ unlines joined
-    putStrLn $ unlines $ toRegScreen joined
+storeRegs regfile joined =
+    let len = length regs
+        lenJoined = take len joined
+        in do
+            writeFile regfile (unlines lenJoined)
+            putStrLn $ unlines $ toRegScreen lenJoined
     
 
