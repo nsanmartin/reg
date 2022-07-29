@@ -37,14 +37,15 @@ input = getRegsInput <|> stdInput <|> printInput
 
 go :: Input -> IO ()
 go (RegsInput regs) = do
-    reqregs <- fmap (\table -> unlines $ filterNothing "" (map (\k -> Map.lookup k table) regs)) getRegTable
-    putStrLn reqregs
-    setClipboard reqregs
+    contents <- getRegContents
+    let (left, right) = splitRegResults $ map (lookupReg (toRegTable contents)) regs in
+        putStrLn $ unlines $ map showInvalidReg left ++ (map showInvalidReg right)
 
 -- if p is False, -p was not given and then we;re not here
 go (PrintInput _) = do
-    regScreen <- getRegfileScreen
-    mapM_ putStrLn regScreen
+    contents <- getRegContents
+    --regScreen <- getRegfileScreen
+    mapM_ putStrLn $ toRegScreen $ lines contents
 
 -- not needed
 -- go (PrintInput False) = return ()

@@ -5,6 +5,7 @@ import System.Directory
 import System.IO
 import qualified Data.Map as Map
 import qualified System.IO.Strict as SIO
+import qualified Data.List as List
 
 regs :: String
 regs = "0123456789abcdefghijklmnopqrstuvwxyz*+"
@@ -14,12 +15,6 @@ getPrefixes =  map (\c -> '"':c:" ") regs
 
 toRegScreen :: [String] -> [String]
 toRegScreen contents = map (\(p, r) -> p ++ r) $ zip getPrefixes contents
-
-getRegfileScreen :: IO [String]
-getRegfileScreen = do
-    regfile <- getRegfile
-    contents <- readFile regfile
-    return $ toRegScreen $ lines contents
 
 getRegfile :: IO FilePath
 getRegfile = fmap (++ "/.reg/regfile") getHomeDirectory
@@ -31,20 +26,24 @@ getRegContents = do
     contents <- readFile regfile
     return contents
 
+lookupReg :: (Map.Map Char String) -> Char -> Either String Char
+lookupReg table char = case Map.lookup char table of
+    Nothing -> Right char
+    (Just s) -> Left s
 
-getRegTable :: IO (Map.Map Char String)
-getRegTable = do
-    regfile <- getRegfile
-    contents <- readFile regfile
-    return  (Map.fromList $ zip regs (lines contents))
+toRegTable :: String -> Map.Map Char String
+toRegTable = Map.fromList . (zip regs) . lines 
 
 joinContents :: String -> String -> [String]
 joinContents oldContent newContent = 
     (lines newContent) ++ (lines oldContent)
 
+splitRegResults :: [Either String Char] -> ([Either String Char], [Either String Char])
+splitRegResults ls = List.partition (\x -> case x of Left s -> True; _ -> False) ls
 
-filterNothing :: String ->  [Maybe String] -> [String]
-filterNothing str = foldr (\a b-> case a of Nothing -> (str:b) ; Just x -> (x:b)) []
+showInvalidReg :: Either String Char -> String
+showInvalidReg (Left s) = s
+showInvalidReg (Right c) = "\t`" ++ [c] ++ "' Invalid reg!"
 
 storeRegs :: String -> [String] -> IO ()
 storeRegs regfile joined =
