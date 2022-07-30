@@ -7,15 +7,7 @@ import qualified Data.Map as Map
 import qualified System.IO.Strict as SIO
 import qualified Data.List as List
 
-regs :: String
-regs = "0123456789abcdefghijklmnopqrstuvwxyz*+"
-
-getPrefixes :: [String]
-getPrefixes =  map (\c -> '"':c:" ") regs
-
-toRegScreen :: [String] -> [String]
-toRegScreen contents = map (\(p, r) -> p ++ r) $ zip getPrefixes contents
-
+--
 getRegfile :: IO FilePath
 getRegfile = fmap (++ "/.reg/regfile") getHomeDirectory
 
@@ -25,11 +17,21 @@ getRegContents = do
     regfile <- getRegfile
     contents <- readFile regfile
     return contents
+--
 
-lookupReg :: (Map.Map Char String) -> Char -> Either String Char
+regs :: String
+regs = "0123456789abcdefghijklmnopqrstuvwxyz*+"
+
+getPrefixes :: [String]
+getPrefixes =  map (\c -> '"':c:" ") regs
+
+toRegScreen :: [String] -> [String]
+toRegScreen contents = map (\(p, r) -> p ++ r) $ zip getPrefixes contents
+
+lookupReg :: (Map.Map Char String) -> Char -> Either Char String
 lookupReg table char = case Map.lookup char table of
-    Nothing -> Right char
-    (Just s) -> Left s
+    Nothing -> Left char
+    (Just s) -> Right s
 
 toRegTable :: String -> Map.Map Char String
 toRegTable = Map.fromList . (zip regs) . lines 
@@ -38,19 +40,16 @@ joinContents :: String -> String -> [String]
 joinContents oldContent newContent = 
     (lines newContent) ++ (lines oldContent)
 
-splitRegResults :: [Either String Char] -> ([Either String Char], [Either String Char])
-splitRegResults ls = List.partition (\x -> case x of Left s -> True; _ -> False) ls
+splitRegResults ls = 
+    let (l, r) = List.partition (\x -> case x of Left s -> True; _ -> False) ls
+    in
+        (map showRegFromEither l, map showRegFromEither r)
 
-showInvalidReg :: Either String Char -> String
-showInvalidReg (Left s) = s
-showInvalidReg (Right c) = "\t`" ++ [c] ++ "' Invalid reg!"
 
-storeRegs :: String -> [String] -> IO ()
-storeRegs regfile joined =
-    let len = length regs
-        lenJoined = take len joined
-        in do
-            writeFile regfile (unlines lenJoined)
-            putStrLn $ unlines $ toRegScreen lenJoined
-    
+showRegFromEither :: Either Char String -> String
+showRegFromEither (Left c) = "\t`" ++ [c] ++ "' Invalid reg!"
+showRegFromEither (Right s) = s
+
+toCappedRegs :: [String] -> [String]
+toCappedRegs = take $ length regs
 
