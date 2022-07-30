@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Parse
       Store
   other-modules:
       Paths_reg
@@ -36,6 +37,7 @@ library
     , containers
     , directory
     , optparse-applicative
+    , split
     , strict
   default-language: Haskell2010
 
@@ -53,6 +55,7 @@ executable reg-exe
     , directory
     , optparse-applicative
     , reg
+    , split
     , strict
   default-language: Haskell2010
 
@@ -71,5 +74,6 @@ test-suite reg-test
     , directory
     , optparse-applicative
     , reg
+    , split
     , strict
   default-language: Haskell2010

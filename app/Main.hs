@@ -9,6 +9,7 @@ import qualified Data.Map as Map
 import qualified System.Hclip as Hclip
 import Data.Char (isSpace)
 import Store
+import Parse
 
 --
 setClipboard :: String -> IO ()
@@ -39,13 +40,24 @@ printInput = PrintInput
 input :: Parser Input
 input = getRegsInput <|> stdInput <|> printInput
 
+reduceRegs :: [String] -> [Int] -> [String]
+reduceRegs regs ix = zipWith (!!)
+                             (map words regs)
+                             (take (length regs) $ cycle ix)
+
 go :: Input -> IO ()
-go (RegsInput regs) = do
+go (RegsInput regsRead) = do
     contents <- getRegContents
-    let (left, right) = splitRegResults $ map (lookupReg (toRegTable contents)) regs
-    let str = unlines $ left ++ right
+    let (regs, ixs) = (splitRegsStr regsRead)
+    let (invalidRegs, validRegs) = (splitRegResults $ map (lookupReg (toRegTable contents)) regs)
+    let requested = if null ixs
+                    then unlines validRegs
+                    else (unwords $ reduceRegs validRegs ixs) ++ "\n"
+                         
+    let str = requested ++ unlines invalidRegs
     putStr str
     setClipboard str
+
 
 -- if p is False, -p was not given and then we;re not here
 go (PrintInput _) = do
