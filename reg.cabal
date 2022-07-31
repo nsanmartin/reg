@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Parse
+      Query
       Store
   other-modules:
       Paths_reg

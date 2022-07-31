@@ -3,24 +3,21 @@ module Main where
 import Options.Applicative
 import Data.Semigroup ((<>))
 import qualified System.IO.Strict as SIO
--- remove this
-import System.IO
-import qualified Data.Map as Map
 import qualified System.Hclip as Hclip
 import Data.Char (isSpace)
 import Store
 import Parse
+import Query
 
 --
 setClipboard :: String -> IO ()
 setClipboard = Hclip.setClipboard . rstrip
-
 --
 
 rstrip :: String -> String
 rstrip = reverse . dropWhile isSpace . reverse
 
-data Input = StdInput | RegsInput String | PrintInput Bool
+data Input = StdInput | RegsInput [String] | PrintInput Bool
 
 stdInput :: Parser Input
 stdInput = pure StdInput
@@ -28,7 +25,7 @@ stdInput = pure StdInput
 
 getRegsInput :: Parser Input
 getRegsInput = RegsInput
-    <$> argument str (metavar "QUERY")
+    <$> some (argument str (metavar "QUERY..."))
 
 printInput :: Parser Input
 printInput = PrintInput
@@ -40,25 +37,11 @@ printInput = PrintInput
 input :: Parser Input
 input = getRegsInput <|> stdInput <|> printInput
 
-getManyAt :: [Int] -> [String] -> [String]
-getManyAt ix ws = [ws !! i | i <- ix]
-
-reduceRegs :: [Int] -> [String] -> [String]
-reduceRegs ixs regLines = map (unwords . (getManyAt ixs) . words)  regLines
-
 go :: Input -> IO ()
--- TODO: implement multiple queries
-go (RegsInput query) = do
-    contents <- getRegContents
-    let (regs, ixs) = (splitRegsStr query)
-    let (invalidRegs, regLines) = (splitRegResults $ map (lookupReg (toRegTable contents)) regs)
-    let requested = if null ixs
-                    then unlines regLines
-                    else (unwords $ reduceRegs ixs regLines) ++ "\n"
-                         
-    let str = requested ++ unlines invalidRegs
-    putStr str
-    setClipboard str
+go (RegsInput queries) = do
+    responses <- (\t -> map (getResponse t) queries)  <$> toRegTable <$> getRegContents 
+    mapM_ putStrLn responses
+    setClipboard $ unlines responses
 
 
 -- if p is False, -p was not given and then we;re not here
@@ -73,9 +56,9 @@ go StdInput  = do
     newContents <- SIO.getContents
     regfile <- getRegfile
     oldContents <- SIO.readFile regfile 
-    let cappedRegs = toCappedRegs $ joinContents oldContents newContents 
-    putStr (unlines $ toRegScreen cappedRegs)
-    writeFile regfile (unlines cappedRegs)
+    let updatedRegs = take (length regList) $ lines $ oldContents ++ newContents 
+    putStr (unlines $ toRegScreen updatedRegs)
+    writeFile regfile (unlines updatedRegs)
     setClipboard newContents
 
 
