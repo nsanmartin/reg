@@ -41,7 +41,7 @@ library
     , strict
   default-language: Haskell2010
 
-executable reg-exe
+executable reg
   main-is: Main.hs
   other-modules:
       Paths_reg

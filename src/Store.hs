@@ -19,11 +19,11 @@ getRegContents = do
     return contents
 --
 
-regs :: String
-regs = "0123456789abcdefghijklmnopqrstuvwxyz*+"
+regList :: String
+regList = "0123456789abcdefghijklmnopqrstuvwxyz"
 
 getPrefixes :: [String]
-getPrefixes =  map (\c -> '"':c:" ") regs
+getPrefixes =  map (\c -> '"':c:" ") regList
 
 toRegScreen :: [String] -> [String]
 toRegScreen contents = map (\(p, r) -> p ++ r) $ zip getPrefixes contents
@@ -34,7 +34,7 @@ lookupReg table char = case Map.lookup char table of
     (Just s) -> Right s
 
 toRegTable :: String -> Map.Map Char String
-toRegTable = Map.fromList . (zip regs) . lines 
+toRegTable = Map.fromList . (zip regList) . lines 
 
 joinContents :: String -> String -> [String]
 joinContents oldContent newContent = 
@@ -51,5 +51,5 @@ showRegFromEither (Left c) = "\t`" ++ [c] ++ "' Invalid reg!"
 showRegFromEither (Right s) = s
 
 toCappedRegs :: [String] -> [String]
-toCappedRegs = take $ length regs
+toCappedRegs = take $ length regList
 
