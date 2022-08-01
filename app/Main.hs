@@ -56,7 +56,7 @@ go StdInput  = do
     newContents <- SIO.getContents
     regfile <- getRegfile
     oldContents <- SIO.readFile regfile 
-    let updatedRegs = take (length regList) $ lines $ oldContents ++ newContents 
+    let updatedRegs = take (length regList) $ lines $ newContents ++ oldContents 
     putStr (unlines $ toRegScreen updatedRegs)
     writeFile regfile (unlines updatedRegs)
     setClipboard newContents
