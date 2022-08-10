@@ -66,8 +66,8 @@ description :: String
 description = 
     "This program reads lines from stdin and copy each in a \"register\". " ++
     "It also copies to clipboard the input received.\n" ++ 
-    "If no stdin is provided, an arbitrary register, requested by a QUERY, " ++
-    "is displayed in stdout and also copied to clipboard.\n" ++ 
+    "If no stdin is provided, an arbitrary set of registers, requested by some QUERIES, " ++
+    "are displayed in stdout and also copied to clipboard.\n" ++ 
     "A query is a string that starts with register identifiers and " ++
     "may optionaly have a `.' (dot) followed by word-indices. The register " ++
     "identifiers are : `" ++ regList ++ "'. So for example: " ++

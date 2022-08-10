@@ -2,14 +2,14 @@
 
 This program reads lines from stdin and copy each in a "register".  It also
 copies to clipboard the input received. If no stdin is provided, an arbitrary
-register, requested by a QUERY, is displayed in stdout and also copied to
-clipboard. A query is a string that starts with register identifiers and may
-optionaly have a `.` (dot) followed by word-indices. The register identifiers
-are : `0123456789abcdefghijklmnopqrstuvwxyz`. So for example: `0ac` refers to
-the three lines cointained at registers 0, a and c while `017.02` means one
-line containing the first and third words from registers 0, 1 and 7.  That is,
-when word-indices are used the response is put in one line while when they're
-absent it would have one line per register in the query.
+set of registers, requested by some QUERIES are displayed in stdout and also
+copied to clipboard. A query is a string that starts with register identifiers
+and may optionaly have a `.` (dot) followed by word-indices. The register
+identifiers are : `0123456789abcdefghijklmnopqrstuvwxyz`. So for example: `0ac`
+refers to the three lines cointained at registers 0, a and c while `017.02`
+means one line containing the first and third words from registers 0, 1 and 7.
+That is, when word-indices are used the response is put in one line while when
+they're absent it would have one line per register in the query.
 
 
 Say you want to cherry pick certain commits:
@@ -42,3 +42,11 @@ $ git cherry-pick r15d23f2 7ba295c d816dbd 0060462
 ```
 
 Or you may also paste from the clipboard the string with the commit hashs.
+
+But the running `reg a.0 9.0 7.0 5.0` displays:
+```
+r15d23f2
+7ba295c 
+d816dbd 
+0060462
+```
