@@ -5,6 +5,7 @@ import Data.Semigroup ((<>))
 import qualified System.IO.Strict as SIO
 import qualified System.Hclip as Hclip
 import Data.Char (isSpace)
+import qualified Data.List.Split as Split
 import Store
 import Parse
 import Query
@@ -17,7 +18,7 @@ setClipboard = Hclip.setClipboard . rstrip
 rstrip :: String -> String
 rstrip = reverse . dropWhile isSpace . reverse
 
-data Input = StdInput | RegsInput [String] | PrintInput Bool
+data Input = StdInput | RegsInput [String] | RegsInputSep String [String] | PrintInput Bool
 
 stdInput :: Parser Input
 stdInput = pure StdInput
@@ -27,6 +28,15 @@ getRegsInput :: Parser Input
 getRegsInput = RegsInput
     <$> some (argument str (metavar "QUERY..."))
 
+getRegsInputSep :: Parser Input
+getRegsInputSep = RegsInputSep
+    <$> strOption 
+    ( long "separator" -- or split-on?
+    <> short 's'
+    <> metavar "SEPARATOR"
+    <> help "separator on which to split")
+    <*> some (argument str (metavar "QUERY..."))
+
 printInput :: Parser Input
 printInput = PrintInput
     <$> switch
@@ -35,14 +45,19 @@ printInput = PrintInput
     <> help "Print regs." )
 
 input :: Parser Input
-input = getRegsInput <|> stdInput <|> printInput
+input = getRegsInput <|> getRegsInputSep <|>  stdInput <|> printInput
 
 go :: Input -> IO ()
 go (RegsInput queries) = do
-    responses <- (\t -> map (getResponse t) queries)  <$> toRegTable <$> getRegContents 
+    responses <- (\t -> map (getResponse words t) queries)  <$> toRegTable <$> getRegContents 
     mapM_ putStrLn responses
     setClipboard $ unlines responses
 
+
+go (RegsInputSep sep queries) = do
+    responses <- (\t -> map (getResponse (Split.splitOn sep) t) queries)  <$> toRegTable <$> getRegContents 
+    mapM_ putStrLn responses
+    setClipboard $ unlines responses
 
 -- if p is False, -p was not given and then we;re not here
 go (PrintInput _) = do

@@ -7,6 +7,8 @@ import qualified Data.List as List
 import Parse
 
 type RegTable = Map.Map Char String
+type SplitFun =  String -> [String]
+
 
 regList :: String
 regList = "0123456789abcdefghijklmnopqrstuvwxyz"
@@ -37,19 +39,18 @@ splitRegResults ls =
             showRegFromEither (Right s) = s
 
 
-reduceRegs :: [Int] -> [String] -> [String]
-reduceRegs ixs regLines = map (unwords . (getManyAt ixs) . words)  regLines
+reduceRegs :: SplitFun -> [Int] -> [String] -> [String]
+reduceRegs splitFun ixs regLines = map (unwords . (getManyAt ixs) . splitFun)  regLines
     where
         getManyAt :: [Int] -> [String] -> [String]
         getManyAt ix ws = [ws !! i | i <- ix]
 
-getResponse :: RegTable -> String -> String
-getResponse regTable query = 
+getResponse :: SplitFun -> RegTable -> String -> String
+getResponse splitFun regTable query = 
     let (regs, ixs) = (splitRegsStr query)
         (invalidRegs, regLines) = (splitRegResults $ map (lookupReg regTable) regs)
         requested = if null ixs
                     then regLines
-                    else reduceRegs ixs regLines
+                    else reduceRegs splitFun ixs regLines
     in
         unwords requested ++ unlines invalidRegs
-
