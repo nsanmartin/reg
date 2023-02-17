@@ -50,3 +50,23 @@ r15d23f2
 d816dbd 
 0060462
 ```
+
+## Install
+
+First, install [the haskell stack tool](https://docs.haskellstack.org/en/stable/).
+
+Then:
+```
+git clone https://github.com/nsanmartin/reg.git
+cd reg
+stack install reg
+```
+
+You also have to create the reg file, and may set an alias for editing regs:
+
+```
+mkdir -p $HOME/.reg && touch $HOME/.reg/regfile
+alias regf='vi $HOME/.reg/regfile'
+```
+
+
